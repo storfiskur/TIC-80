@@ -46,37 +46,37 @@ jobs:
  
 
   # === MacOS 14 / arm64 ===
-  macos-arm64:
-    runs-on: macos-14
+  # macos-arm64:
+  #   runs-on: macos-14
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
+  #         fetch-depth: 0
 
-      - name: Install
-        run: brew uninstall --ignore-dependencies libidn2
+  #     - name: Install
+  #       run: brew uninstall --ignore-dependencies libidn2
 
-      - name: Build
-        run: |
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PRO=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-          cmake --build . --parallel
+  #     - name: Build
+  #       run: |
+  #         cd build
+  #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PRO=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+  #         cmake --build . --parallel
 
-      - name: Deploy
-        uses: actions/upload-artifact@v4
-        with:
-          name: "tic80-macos-arm64"
-          path: |
-            build/bin/tic80
-            build/bin/*.dylib
+  #     - name: Deploy
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: "tic80-macos-arm64"
+  #         path: |
+  #           build/bin/tic80
+  #           build/bin/*.dylib
 
-      - name: Build Pro
-        run: |
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-          cmake --build . --parallel
+  #     - name: Build Pro
+  #       run: |
+  #         cd build
+  #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+  #         cmake --build . --parallel
 
   # === MacOS 15 / x86_64 ===
   macos:
@@ -94,7 +94,7 @@ jobs:
       - name: Build
         run: |
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PRO=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           cmake --build . --parallel
 
       - name: Deploy
