@@ -74,7 +74,7 @@ jobs:
         shell: bash
         run: |
           cd build
-          cmake -G "MSYS Makefiles" -DBUILD_SDLGPU=On -DBUILD_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_ALL=ON ..
+          cmake -G "MSYS Makefiles" -DBUILD_SDLGPU=On -DBUILD_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_ALL=ON  -DBUILD_PRO=ON ..
           cmake --build . --parallel
 
   # === Ubuntu ===
