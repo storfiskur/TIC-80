@@ -64,7 +64,7 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PRO=On  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           cmake --build . --parallel
 
-      - name: Deploy
+       - name: Deploy
         uses: actions/upload-artifact@v4
         with:
           name: "tic80-macos"
@@ -77,9 +77,3 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           cmake --build . --parallel
-
-
-
-
-          path: |
-            build/bin/*
