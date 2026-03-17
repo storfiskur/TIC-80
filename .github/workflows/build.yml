@@ -1,13 +1,15 @@
-name: Build
+name: Build TIC-80 PRO
 
 on: [push, pull_request]
 
-# as recommended by: https://github.com/actions/checkout/issues/1590
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
-  # === Windows ===
+
+  # ============================
+  # === Windows Build (x64) ===
+  # ============================
   windows:
     runs-on: windows-2022
 
@@ -21,64 +23,43 @@ jobs:
         with:
           ruby-version: 2.6
 
-      - name: Build
+      - name: Configure & Build
         shell: cmd
         run: |
           cd build
-          cmake -G "Visual Studio 17 2022" -DBUILD_SDLGPU=On -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_WITH_ALL=ON -DBUILD_PRO=On  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          cmake -G "Visual Studio 17 2022" ^
+            -DBUILD_SDLGPU=On ^
+            -DCMAKE_BUILD_TYPE=MinSizeRel ^
+            -DBUILD_WITH_ALL=ON ^
+            -DBUILD_PRO=On ^
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ^
+            ..
           cmake --build . --config MinSizeRel --parallel
 
-      - name: Deploy
+      - name: Copy resources
+        shell: cmd
+        run: |
+          xcopy system build\bin\system /E /I /Y
+          xcopy templates build\bin\templates /E /I /Y
+          xcopy art build\bin\art /E /I /Y
+          xcopy players build\bin\players /E /I /Y
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "tic80-windows"
+          name: tic80-windows
           path: |
             build/bin/tic80.exe
             build/bin/*.dll
+            build/bin/system
+            build/bin/templates
+            build/bin/art
+            build/bin/players
 
-      - name: Build Pro
-        shell: cmd
-        run: |
-          cd build
-          cmake -G "Visual Studio 17 2022" -DBUILD_SDLGPU=On -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_PRO=On -DBUILD_WITH_ALL=ON ..
-          cmake --build . --config MinSizeRel --parallel
 
- 
-
-  # === MacOS 14 / arm64 ===
-  # macos-arm64:
-  #   runs-on: macos-14
-
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         submodules: recursive
-  #         fetch-depth: 0
-
-  #     - name: Install
-  #       run: brew uninstall --ignore-dependencies libidn2
-
-  #     - name: Build
-  #       run: |
-  #         cd build
-  #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PRO=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-  #         cmake --build . --parallel
-
-  #     - name: Deploy
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: "tic80-macos-arm64"
-  #         path: |
-  #           build/bin/tic80
-  #           build/bin/*.dylib
-
-  #     - name: Build Pro
-  #       run: |
-  #         cd build
-  #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-  #         cmake --build . --parallel
-
-  # === MacOS 15 / x86_64 ===
+  # ============================
+  # === macOS Build (x64) =====
+  # ============================
   macos:
     runs-on: macos-15-intel
 
@@ -88,25 +69,37 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install
+      - name: Fix brew conflict
         run: brew uninstall --ignore-dependencies libidn2
 
-      - name: Build
+      - name: Configure & Build
         run: |
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PRO=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_STATIC=ON \
+            -DBUILD_SDLGPU=On \
+            -DBUILD_WITH_ALL=ON \
+            -DBUILD_PRO=On \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            ..
           cmake --build . --parallel
 
-      - name: Deploy
+      - name: Copy resources
+        run: |
+          cp -R system build/bin/system
+          cp -R templates build/bin/templates
+          cp -R art build/bin/art
+          cp -R players build/bin/players
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "tic80-macos"
+          name: tic80-macos
           path: |
             build/bin/tic80
             build/bin/*.dylib
-
-      - name: Build Pro
-        run: |
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-          cmake --build . --parallel
+            build/bin/system
+            build/bin/templates
+            build/bin/art
+            build/bin/players
