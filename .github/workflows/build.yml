@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  TIC80_RELEASE: "1.1.2837"   # <-- можно обновлять при выходе новых версий
 
 jobs:
 
@@ -23,7 +24,23 @@ jobs:
         with:
           ruby-version: 2.6
 
-      - name: Configure & Build
+      # --- Скачиваем официальный TIC-80 ---
+      - name: Download official TIC-80 release
+        shell: powershell
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://github.com/nesbox/TIC-80/releases/download/v$env:TIC80_RELEASE/tic80-v$env:TIC80_RELEASE-windows.zip" `
+            -OutFile "tic80.zip"
+          Expand-Archive tic80.zip -DestinationPath official
+
+      # --- Копируем players/ из официального релиза ---
+      - name: Copy players from official release
+        shell: cmd
+        run: |
+          xcopy official\players players /E /I /Y
+
+      # --- Сборка PRO ---
+      - name: Build
         shell: cmd
         run: |
           cd build
@@ -36,6 +53,7 @@ jobs:
             ..
           cmake --build . --config MinSizeRel --parallel
 
+      # --- Копируем ресурсы ---
       - name: Copy resources
         shell: cmd
         run: |
@@ -44,6 +62,7 @@ jobs:
           xcopy art build\bin\art /E /I /Y
           xcopy players build\bin\players /E /I /Y
 
+      # --- Артефакт ---
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -72,7 +91,19 @@ jobs:
       - name: Fix brew conflict
         run: brew uninstall --ignore-dependencies libidn2
 
-      - name: Configure & Build
+      # --- Скачиваем официальный TIC-80 ---
+      - name: Download official TIC-80 release
+        run: |
+          curl -L "https://github.com/nesbox/TIC-80/releases/download/v$TIC80_RELEASE/tic80-v$TIC80_RELEASE-osx.zip" -o tic80.zip
+          unzip tic80.zip -d official
+
+      # --- Копируем players/ ---
+      - name: Copy players from official release
+        run: |
+          cp -R official/players players
+
+      # --- Сборка PRO ---
+      - name: Build
         run: |
           cd build
           cmake \
@@ -85,6 +116,7 @@ jobs:
             ..
           cmake --build . --parallel
 
+      # --- Копируем ресурсы ---
       - name: Copy resources
         run: |
           cp -R system build/bin/system
@@ -92,6 +124,7 @@ jobs:
           cp -R art build/bin/art
           cp -R players build/bin/players
 
+      # --- Артефакт ---
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
