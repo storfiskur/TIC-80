@@ -7,6 +7,39 @@ env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
+  # === Windows MinGW-64 ===
+  windows-mingw:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Setup Mingw
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            base-devel
+            git
+            gcc
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+
+      - name: Build
+        shell: bash
+        run: |
+          cd build
+          cmake -G "MSYS Makefiles" -DBUILD_SDLGPU=On -DBUILD_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_PRO=On  -DBUILD_WITH_ALL=ON ..
+          cmake --build . --parallel
   # === Windows ===
   # windows:
   #   runs-on: windows-2022
@@ -111,33 +144,4 @@ jobs:
   #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
   #         cmake --build . --parallel
 
- # === HTML ===
-  html:
-    runs-on: ubuntu-latest
 
-    steps:
-      - uses: mymindstorm/setup-emsdk@v14
-
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6
-
-
-      - name: Build all
-        run: |
-          cd build
-          emcmake cmake -DBUILD_SDLGPU=On -DBUILD_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_ALL=ON -DBUILD_PRO=On  -DTIC_WEBSITE="https://tic80.com".. --fresh
-          cmake --build . --parallel
-          cp html/index.html bin/index.html
-
-      - name: Deploy
-        uses: actions/upload-artifact@v4
-        with:
-          name: "tic80-html"
-          path: |
-            build/bin/*
