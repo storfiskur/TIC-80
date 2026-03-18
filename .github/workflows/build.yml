@@ -110,3 +110,34 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
           cmake --build . --parallel
+
+# === HTML ===
+  html:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: mymindstorm/setup-emsdk@v14
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+
+      - name: Build lua
+        run: |
+          cd build
+          emcmake cmake -DBUILD_SDLGPU=On -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_LUA=ON -DBUILD_PRO=On -DTIC80_TARGET=tic80lua .. --fresh
+          cmake --build . --parallel
+
+      
+
+      - name: Deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: "tic80-html"
+          path: |
+            build/bin/*
