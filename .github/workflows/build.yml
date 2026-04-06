@@ -8,43 +8,23 @@ env:
 
 jobs:
   # === Windows MinGW-64 ===
-  windows-mingw:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-
-    steps:
-      - name: Setup Mingw
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: >-
-            base-devel
-            git
-            gcc
-
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6
-
-      - name: Build
-        shell: bash
-        run: |
-          cd build
-          cmake -G "MSYS Makefiles" -DBUILD_SDLGPU=On -DBUILD_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_PRO=On  -DBUILD_WITH_ALL=ON ..
-          cmake --build . --parallel
-  # === Windows ===
-  # windows:
-  #   runs-on: windows-2022
+  # windows-mingw:
+  #   runs-on: windows-latest
+  #   defaults:
+  #     run:
+  #       shell: msys2 {0}
 
   #   steps:
+  #     - name: Setup Mingw
+  #       uses: msys2/setup-msys2@v2
+  #       with:
+  #         msystem: UCRT64
+  #         update: true
+  #         install: >-
+  #           base-devel
+  #           git
+  #           gcc
+
   #     - uses: actions/checkout@v4
   #       with:
   #         submodules: recursive
@@ -55,26 +35,46 @@ jobs:
   #         ruby-version: 2.6
 
   #     - name: Build
-  #       shell: cmd
+  #       shell: bash
   #       run: |
   #         cd build
-  #         cmake -G "Visual Studio 17 2022" -DBUILD_SDLGPU=On -DBUILD_PLAYER=On -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_WITH_ALL=ON -DBUILD_PRO=On  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-  #         cmake --build . --config MinSizeRel --parallel
+  #         cmake -G "MSYS Makefiles" -DBUILD_SDLGPU=On -DBUILD_STATIC=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_PRO=On  -DBUILD_WITH_ALL=ON ..
+  #         cmake --build . --parallel
+  # === Windows ===
+  windows:
+    runs-on: windows-2022
 
-  #     - name: Deploy
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: "tic80-windows"
-  #         path: |
-  #           build/bin/tic80.exe
-  #           build/bin/*.dll
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
-  #     - name: Build Pro
-  #       shell: cmd
-  #       run: |
-  #         cd build
-  #         cmake -G "Visual Studio 17 2022" -DBUILD_SDLGPU=On -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_PRO=On -DBUILD_WITH_ALL=ON ..
-  #         cmake --build . --config MinSizeRel --parallel
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6
+
+      - name: Build
+        shell: cmd
+        run: |
+          cd build
+          cmake -G "Visual Studio 17 2022" -DBUILD_SDLGPU=On -DBUILD_PLAYER=On -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_WITH_ALL=ON -DBUILD_PRO=On  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          cmake --build . --config MinSizeRel --parallel
+
+      - name: Deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: "tic80-windows"
+          path: |
+            build/bin/tic80.exe
+            build/bin/*.dll
+
+      - name: Build Pro
+        shell: cmd
+        run: |
+          cd build
+          cmake -G "Visual Studio 17 2022" -DBUILD_SDLGPU=On -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_PRO=On -DBUILD_WITH_ALL=ON ..
+          cmake --build . --config MinSizeRel --parallel
 
  
 
@@ -111,37 +111,37 @@ jobs:
   #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
   #         cmake --build . --parallel
 
-  # === MacOS 15 / x86_64 ===
-  # macos:
-  #   runs-on: macos-15-intel
+  #=== MacOS 15 / x86_64 ===
+  macos:
+    runs-on: macos-15-intel
 
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         submodules: recursive
-  #         fetch-depth: 0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
-  #     - name: Install
-  #       run: brew uninstall --ignore-dependencies libidn2
+      - name: Install
+        run: brew uninstall --ignore-dependencies libidn2
 
-  #     - name: Build
-  #       run: |
-  #         cd build
-  #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PLAYER=On -DBUILD_PRO=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-  #         cmake --build . --parallel
+      - name: Build
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON -DBUILD_SDLGPU=On -DBUILD_WITH_ALL=ON -DBUILD_PLAYER=On -DBUILD_PRO=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          cmake --build . --parallel
 
-  #     - name: Deploy
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: "tic80-macos"
-  #         path: |
-  #           build/bin/tic80
-  #           build/bin/*.dylib
+      - name: Deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: "tic80-macos"
+          path: |
+            build/bin/tic80
+            build/bin/*.dylib
 
-  #     - name: Build Pro
-  #       run: |
-  #         cd build
-  #         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
-  #         cmake --build . --parallel
+      - name: Build Pro
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SDLGPU=On -DBUILD_PRO=On -DBUILD_WITH_ALL=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+          cmake --build . --parallel
 
 
